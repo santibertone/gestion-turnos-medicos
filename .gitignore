@@ -1,0 +1,25 @@
+# Dependencias (backend y frontend)
+node_modules/
+
+# Variables de entorno (NUNCA se suben)
+.env
+
+# Build del frontend (Angular)
+/frontend/dist/
+.angular/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Sistema
+.DS_Store
+Thumbs.db
+
+# Editores
+.vscode/
+.idea/
+
+# Material del TP y archivos internos (no van al repositorio)
+/documentos/
+/PARTE_COMPANIERO/
