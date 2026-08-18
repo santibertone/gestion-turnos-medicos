@@ -20,6 +20,5 @@ Thumbs.db
 .vscode/
 .idea/
 
-# Material del TP y archivos internos (no van al repositorio)
+# Material del TP (consignas) - no van al repositorio
 /documentos/
-/PARTE_COMPANIERO/
