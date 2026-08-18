@@ -8,6 +8,8 @@ const { probarConexion } = require("./config/db");
 const { responderOk, responderError } = require("./utils/respuesta");
 const { verificarToken, verificarRol } = require("./middlewares/auth");
 
+const authRoutes = require("./routes/authRoutes");
+
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -29,6 +31,9 @@ app.get(
   verificarRol("admin", "administrador"),
   (req, res) => responderOk(res, 200, { mensaje: "Acceso de administrador OK" })
 );
+
+// Rutas de la aplicacion.
+app.use("/auth", authRoutes);
 
 // 404 uniforme para rutas inexistentes.
 app.use((req, res) => responderError(res, 404, "Ruta no encontrada"));
