@@ -1,0 +1,80 @@
+{
+  "info": {
+    "name": "Turnos Medicos - Backend Semana 1",
+    "description": "Pruebas de auth (registro, login, perfil) + health y coberturas.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000" },
+    { "key": "token", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "request": {
+        "method": "GET",
+        "url": { "raw": "{{baseUrl}}/health", "host": ["{{baseUrl}}"], "path": ["health"] }
+      }
+    },
+    {
+      "name": "Listar coberturas",
+      "request": {
+        "method": "GET",
+        "url": { "raw": "{{baseUrl}}/coberturas", "host": ["{{baseUrl}}"], "path": ["coberturas"] }
+      }
+    },
+    {
+      "name": "Registro paciente",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombre\": \"Lucia\",\n  \"apellido\": \"Martinez\",\n  \"dni\": \"40123456\",\n  \"email\": \"lucia@mail.com\",\n  \"password\": \"secreta123\",\n  \"telefono\": \"3424999888\",\n  \"fecha_nacimiento\": \"2000-05-20\",\n  \"id_cobertura\": 1\n}"
+        },
+        "url": { "raw": "{{baseUrl}}/auth/registro", "host": ["{{baseUrl}}"], "path": ["auth", "registro"] }
+      }
+    },
+    {
+      "name": "Login",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const res = pm.response.json();",
+              "if (res.datos && res.datos.token) {",
+              "  pm.collectionVariables.set('token', res.datos.token);",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"dni\": \"18222333\",\n  \"password\": \"clinica123\"\n}"
+        },
+        "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
+      }
+    },
+    {
+      "name": "Perfil (protegido)",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": { "raw": "{{baseUrl}}/auth/perfil", "host": ["{{baseUrl}}"], "path": ["auth", "perfil"] }
+      }
+    },
+    {
+      "name": "Admin ping (rol admin)",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": { "raw": "{{baseUrl}}/admin/ping", "host": ["{{baseUrl}}"], "path": ["admin", "ping"] }
+      }
+    }
+  ]
+}
