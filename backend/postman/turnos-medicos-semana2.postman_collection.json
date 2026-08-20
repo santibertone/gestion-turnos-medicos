@@ -1,0 +1,310 @@
+{
+  "info": {
+    "name": "Turnos Medicos - Semana 2",
+    "description": "CRUD de sedes, especialidades, coberturas y agenda medica. Estructura de respuesta uniforme { codigo, estado, datos }. Proteccion por rol con verificarToken + verificarRol.\n\nUso: 1) ejecutar 'Login admin' (guarda token_admin), 'Login operador' (token_operador) y 'Login medico' (token_medico). 2) Probar el resto de los requests.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:3000" },
+    { "key": "token_admin", "value": "" },
+    { "key": "token_operador", "value": "" },
+    { "key": "token_medico", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var d = pm.response.json();",
+                  "if (d.datos && d.datos.token) { pm.collectionVariables.set('token_admin', d.datos.token); }"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"dni\": \"18222333\",\n  \"password\": \"clinica123\"\n}" },
+            "url": { "raw": "{{base_url}}/auth/login", "host": ["{{base_url}}"], "path": ["auth", "login"] }
+          }
+        },
+        {
+          "name": "Login operador",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var d = pm.response.json();",
+                  "if (d.datos && d.datos.token) { pm.collectionVariables.set('token_operador', d.datos.token); }"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"dni\": \"15200548\",\n  \"password\": \"clinica123\"\n}" },
+            "url": { "raw": "{{base_url}}/auth/login", "host": ["{{base_url}}"], "path": ["auth", "login"] }
+          }
+        },
+        {
+          "name": "Login medico",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var d = pm.response.json();",
+                  "if (d.datos && d.datos.token) { pm.collectionVariables.set('token_medico', d.datos.token); }"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"dni\": \"20111222\",\n  \"password\": \"clinica123\"\n}" },
+            "url": { "raw": "{{base_url}}/auth/login", "host": ["{{base_url}}"], "path": ["auth", "login"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Sedes (admin)",
+      "item": [
+        {
+          "name": "Listar sedes",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token_admin}}" }],
+            "url": { "raw": "{{base_url}}/sedes", "host": ["{{base_url}}"], "path": ["sedes"] }
+          }
+        },
+        {
+          "name": "Crear sede",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token_admin}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Sede Sur\",\n  \"direccion\": \"Calle 9 111\",\n  \"telefono\": \"3424000003\"\n}" },
+            "url": { "raw": "{{base_url}}/sedes", "host": ["{{base_url}}"], "path": ["sedes"] }
+          }
+        },
+        {
+          "name": "Modificar sede",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token_admin}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Sede Sur Renovada\",\n  \"direccion\": \"Calle 9 222\",\n  \"telefono\": \"3424000004\"\n}" },
+            "url": { "raw": "{{base_url}}/sedes/3", "host": ["{{base_url}}"], "path": ["sedes", "3"] }
+          }
+        },
+        {
+          "name": "Eliminar sede (nueva, sin dependencias)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token_admin}}" }],
+            "url": { "raw": "{{base_url}}/sedes/3", "host": ["{{base_url}}"], "path": ["sedes", "3"] }
+          }
+        },
+        {
+          "name": "Eliminar sede con dependencias (espera 409)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token_admin}}" }],
+            "url": { "raw": "{{base_url}}/sedes/1", "host": ["{{base_url}}"], "path": ["sedes", "1"] }
+          }
+        },
+        {
+          "name": "Listar sedes con rol no admin (espera 403)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token_medico}}" }],
+            "url": { "raw": "{{base_url}}/sedes", "host": ["{{base_url}}"], "path": ["sedes"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Coberturas",
+      "item": [
+        {
+          "name": "Listar coberturas (publico)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{base_url}}/coberturas", "host": ["{{base_url}}"], "path": ["coberturas"] }
+          }
+        },
+        {
+          "name": "Crear cobertura (admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token_admin}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"OSDE\"\n}" },
+            "url": { "raw": "{{base_url}}/coberturas", "host": ["{{base_url}}"], "path": ["coberturas"] }
+          }
+        },
+        {
+          "name": "Modificar cobertura (admin)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token_admin}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"OSDE 210\"\n}" },
+            "url": { "raw": "{{base_url}}/coberturas/2", "host": ["{{base_url}}"], "path": ["coberturas", "2"] }
+          }
+        },
+        {
+          "name": "Eliminar cobertura (nueva)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token_admin}}" }],
+            "url": { "raw": "{{base_url}}/coberturas/2", "host": ["{{base_url}}"], "path": ["coberturas", "2"] }
+          }
+        },
+        {
+          "name": "Eliminar cobertura con dependencias (espera 409)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token_admin}}" }],
+            "url": { "raw": "{{base_url}}/coberturas/1", "host": ["{{base_url}}"], "path": ["coberturas", "1"] }
+          }
+        },
+        {
+          "name": "Crear cobertura con rol no admin (espera 403)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token_medico}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"NoPermitida\"\n}" },
+            "url": { "raw": "{{base_url}}/coberturas", "host": ["{{base_url}}"], "path": ["coberturas"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Agenda medica",
+      "item": [
+        {
+          "name": "Crear agenda (operador, cualquier medico)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token_operador}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"hora_entrada\": \"08:00\",\n  \"hora_salida\": \"12:00\",\n  \"fecha\": \"2025-11-10\",\n  \"id_medico\": 3,\n  \"id_especialidad\": 1,\n  \"id_sede\": 1\n}" },
+            "url": { "raw": "{{base_url}}/agenda", "host": ["{{base_url}}"], "path": ["agenda"] }
+          }
+        },
+        {
+          "name": "Crear agenda (medico, su propia, 2do rango mismo dia)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token_medico}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"hora_entrada\": \"13:00\",\n  \"hora_salida\": \"17:00\",\n  \"fecha\": \"2025-11-10\",\n  \"id_medico\": 3,\n  \"id_especialidad\": 1,\n  \"id_sede\": 1\n}" },
+            "url": { "raw": "{{base_url}}/agenda", "host": ["{{base_url}}"], "path": ["agenda"] }
+          }
+        },
+        {
+          "name": "Crear agenda de OTRO medico (medico, espera 403)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token_medico}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"hora_entrada\": \"08:00\",\n  \"hora_salida\": \"09:00\",\n  \"fecha\": \"2025-11-11\",\n  \"id_medico\": 1,\n  \"id_especialidad\": 1,\n  \"id_sede\": 1\n}" },
+            "url": { "raw": "{{base_url}}/agenda", "host": ["{{base_url}}"], "path": ["agenda"] }
+          }
+        },
+        {
+          "name": "Listar agenda (operador, filtrado por sede y fecha)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token_operador}}" }],
+            "url": {
+              "raw": "{{base_url}}/agenda?id_sede=1&fecha=2025-11-10",
+              "host": ["{{base_url}}"],
+              "path": ["agenda"],
+              "query": [
+                { "key": "id_sede", "value": "1" },
+                { "key": "fecha", "value": "2025-11-10" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Listar agenda (medico, solo la suya)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token_medico}}" }],
+            "url": { "raw": "{{base_url}}/agenda", "host": ["{{base_url}}"], "path": ["agenda"] }
+          }
+        },
+        {
+          "name": "Modificar agenda (operador)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token_operador}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"hora_entrada\": \"08:30\",\n  \"hora_salida\": \"12:30\",\n  \"fecha\": \"2025-11-10\",\n  \"id_medico\": 3,\n  \"id_especialidad\": 1,\n  \"id_sede\": 1\n}" },
+            "url": { "raw": "{{base_url}}/agenda/3", "host": ["{{base_url}}"], "path": ["agenda", "3"] }
+          }
+        },
+        {
+          "name": "Eliminar agenda con turnos (espera 409)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token_operador}}" }],
+            "url": { "raw": "{{base_url}}/agenda/2", "host": ["{{base_url}}"], "path": ["agenda", "2"] }
+          }
+        },
+        {
+          "name": "Eliminar agenda (operador)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token_operador}}" }],
+            "url": { "raw": "{{base_url}}/agenda/3", "host": ["{{base_url}}"], "path": ["agenda", "3"] }
+          }
+        },
+        {
+          "name": "Agenda con rol paciente (espera 403)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token_medico}}" }],
+            "url": { "raw": "{{base_url}}/agenda", "host": ["{{base_url}}"], "path": ["agenda"] }
+          }
+        }
+      ]
+    }
+  ]
+}

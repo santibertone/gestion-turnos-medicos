@@ -58,6 +58,37 @@ Todos los endpoints (éxito y error) responden:
 | GET    | `/auth/perfil`   | JWT               | Datos del usuario logueado       |
 | GET    | `/admin/ping`    | JWT + rol admin   | Prueba de `verificarRol` (403)   |
 
+## Endpoints — Semana 2
+
+CRUD de entidades base y agenda médica. Todos reutilizan `verificarToken` y `verificarRol`.
+
+**Sedes / Especialidades / Coberturas — CRUD solo `administrador`** (un rol distinto responde 403):
+
+| Método | Ruta                    | Protección          | Descripción                                  |
+|--------|-------------------------|---------------------|----------------------------------------------|
+| GET    | `/sedes`                | JWT + rol admin     | Lista sedes                                  |
+| POST   | `/sedes`                | JWT + rol admin     | Alta de sede (`nombre`,`direccion`,`telefono`)|
+| PUT    | `/sedes/:id`            | JWT + rol admin     | Modifica sede                                |
+| DELETE | `/sedes/:id`            | JWT + rol admin     | Baja; 409 si tiene usuarios o agenda         |
+| GET    | `/especialidades`       | JWT + rol admin     | Lista especialidades                         |
+| POST   | `/especialidades`       | JWT + rol admin     | Alta (`descripcion`)                         |
+| PUT    | `/especialidades/:id`   | JWT + rol admin     | Modifica especialidad                        |
+| DELETE | `/especialidades/:id`   | JWT + rol admin     | Baja; 409 si está asociada a médico o agenda |
+| POST   | `/coberturas`           | JWT + rol admin     | Alta (`nombre`)                              |
+| PUT    | `/coberturas/:id`       | JWT + rol admin     | Modifica cobertura                           |
+| DELETE | `/coberturas/:id`       | JWT + rol admin     | Baja; 409 si la usa un usuario o turno       |
+
+> El `GET /coberturas` (listado público, Semana 1) sigue disponible para el registro.
+
+**Agenda médica — acceden `medico` (solo la suya) y `operador` (cualquiera); `paciente` sin acceso:**
+
+| Método | Ruta          | Protección              | Descripción                                        |
+|--------|---------------|-------------------------|----------------------------------------------------|
+| POST   | `/agenda`     | JWT + rol medico/operador | Alta de rango horario (varios por día permitidos)  |
+| GET    | `/agenda`     | JWT + rol medico/operador | Lista; filtros `?id_medico=&id_sede=&fecha=`       |
+| PUT    | `/agenda/:id` | JWT + rol medico/operador | Modifica un rango de agenda                        |
+| DELETE | `/agenda/:id` | JWT + rol medico/operador | Baja; 409 si tiene turnos asociados                |
+
 ## Estructura del proyecto
 
 ```
