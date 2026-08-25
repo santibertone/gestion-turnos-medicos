@@ -10,6 +10,9 @@ const { verificarToken, verificarRol } = require("./middlewares/auth");
 
 const authRoutes = require("./routes/authRoutes");
 const coberturaRoutes = require("./routes/coberturaRoutes");
+const sedeRoutes = require("./routes/sedeRoutes");
+const especialidadRoutes = require("./routes/especialidadRoutes");
+const agendaRoutes = require("./routes/agendaRoutes");
 
 const app = express();
 app.use(cors());
@@ -36,6 +39,9 @@ app.get(
 // Rutas de la aplicacion.
 app.use("/auth", authRoutes);
 app.use("/coberturas", coberturaRoutes);
+app.use("/sedes", sedeRoutes);
+app.use("/especialidades", especialidadRoutes);
+app.use("/agenda", agendaRoutes);
 
 // 404 uniforme para rutas inexistentes.
 app.use((req, res) => responderError(res, 404, "Ruta no encontrada"));

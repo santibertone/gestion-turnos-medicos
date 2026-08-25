@@ -1,0 +1,116 @@
+{
+  "info": {
+    "name": "Turnos Medicos - Semana 2 - Especialidades",
+    "description": "CRUD de especialidades (solo rol administrador). Estructura de respuesta uniforme { codigo, estado, datos }.\n\nUso: 1) ejecutar 'Login admin' (guarda token_admin) y 'Login medico' (token_medico). 2) Probar el resto.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:3000" },
+    { "key": "token_admin", "value": "" },
+    { "key": "token_medico", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Login admin",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "var d = pm.response.json();",
+              "if (d.datos && d.datos.token) { pm.collectionVariables.set('token_admin', d.datos.token); }"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"dni\": \"18222333\",\n  \"password\": \"clinica123\"\n}" },
+        "url": { "raw": "{{base_url}}/auth/login", "host": ["{{base_url}}"], "path": ["auth", "login"] }
+      }
+    },
+    {
+      "name": "Login medico",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "var d = pm.response.json();",
+              "if (d.datos && d.datos.token) { pm.collectionVariables.set('token_medico', d.datos.token); }"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"dni\": \"20111222\",\n  \"password\": \"clinica123\"\n}" },
+        "url": { "raw": "{{base_url}}/auth/login", "host": ["{{base_url}}"], "path": ["auth", "login"] }
+      }
+    },
+    {
+      "name": "Listar especialidades (admin)",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token_admin}}" }],
+        "url": { "raw": "{{base_url}}/especialidades", "host": ["{{base_url}}"], "path": ["especialidades"] }
+      }
+    },
+    {
+      "name": "Crear especialidad (admin)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{token_admin}}" }
+        ],
+        "body": { "mode": "raw", "raw": "{\n  \"descripcion\": \"Cardiologia\"\n}" },
+        "url": { "raw": "{{base_url}}/especialidades", "host": ["{{base_url}}"], "path": ["especialidades"] }
+      }
+    },
+    {
+      "name": "Modificar especialidad (admin)",
+      "request": {
+        "method": "PUT",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{token_admin}}" }
+        ],
+        "body": { "mode": "raw", "raw": "{\n  \"descripcion\": \"Cardiologia Clinica\"\n}" },
+        "url": { "raw": "{{base_url}}/especialidades/2", "host": ["{{base_url}}"], "path": ["especialidades", "2"] }
+      }
+    },
+    {
+      "name": "Eliminar especialidad nueva (admin)",
+      "request": {
+        "method": "DELETE",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token_admin}}" }],
+        "url": { "raw": "{{base_url}}/especialidades/2", "host": ["{{base_url}}"], "path": ["especialidades", "2"] }
+      }
+    },
+    {
+      "name": "Eliminar especialidad con dependencias (espera 409)",
+      "request": {
+        "method": "DELETE",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token_admin}}" }],
+        "url": { "raw": "{{base_url}}/especialidades/1", "host": ["{{base_url}}"], "path": ["especialidades", "1"] }
+      }
+    },
+    {
+      "name": "Crear especialidad con rol no admin (espera 403)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{token_medico}}" }
+        ],
+        "body": { "mode": "raw", "raw": "{\n  \"descripcion\": \"NoPermitida\"\n}" },
+        "url": { "raw": "{{base_url}}/especialidades", "host": ["{{base_url}}"], "path": ["especialidades"] }
+      }
+    }
+  ]
+}
