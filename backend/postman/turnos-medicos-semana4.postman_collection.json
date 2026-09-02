@@ -1,0 +1,149 @@
+{
+  "info": {
+    "name": "Turnos Medicos - Semana 4 (Auditoria)",
+    "description": "Auditoria de acciones sensibles (Semana 4). Las altas/bajas/modificaciones sobre usuarios, coberturas, especialidades y sedes se registran AUTOMATICAMENTE (middleware auditar). Aca se prueba que las operaciones generan el log y el endpoint de consulta con filtros, accesible solo por administrador.\n\nLos reportes/estadisticas se prueban en la coleccion aparte 'Semana 4 (Reportes)'.\n\nUso: 1) 'Login admin' guarda token_admin. 2) Correr las operaciones (alta/modif/baja de sede, cobertura, etc.) para generar logs. 3) 'Listar auditoria' y probar los filtros. 4) Ver los 403/401.\n\nRespuesta uniforme { codigo, estado, datos }.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:3000" },
+    { "key": "token_admin", "value": "" },
+    { "key": "token_operador", "value": "" },
+    { "key": "sede_id", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Login admin",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "var d = pm.response.json();",
+              "if (d.datos && d.datos.token) { pm.collectionVariables.set('token_admin', d.datos.token); }"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"dni\": \"18222333\",\n  \"password\": \"clinica123\"\n}" },
+        "url": { "raw": "{{base_url}}/auth/login", "host": ["{{base_url}}"], "path": ["auth", "login"] }
+      }
+    },
+    {
+      "name": "Login operador (para probar 403)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "var d = pm.response.json();",
+              "if (d.datos && d.datos.token) { pm.collectionVariables.set('token_operador', d.datos.token); }"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"dni\": \"15200548\",\n  \"password\": \"clinica123\"\n}" },
+        "url": { "raw": "{{base_url}}/auth/login", "host": ["{{base_url}}"], "path": ["auth", "login"] }
+      }
+    },
+    {
+      "name": "Generar log - Alta de sede",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "var d = pm.response.json();",
+              "if (d.datos && d.datos.id) { pm.collectionVariables.set('sede_id', d.datos.id); }"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{token_admin}}" }
+        ],
+        "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Sede Auditoria\",\n  \"direccion\": \"Av. Siempreviva 742\",\n  \"telefono\": \"1122334455\"\n}" },
+        "url": { "raw": "{{base_url}}/sedes", "host": ["{{base_url}}"], "path": ["sedes"] }
+      }
+    },
+    {
+      "name": "Generar log - Modificacion de sede",
+      "request": {
+        "method": "PUT",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{token_admin}}" }
+        ],
+        "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Sede Auditoria (editada)\",\n  \"direccion\": \"Av. Siempreviva 743\",\n  \"telefono\": \"1199887766\"\n}" },
+        "url": { "raw": "{{base_url}}/sedes/{{sede_id}}", "host": ["{{base_url}}"], "path": ["sedes", "{{sede_id}}"] }
+      }
+    },
+    {
+      "name": "Generar log - Baja de sede",
+      "request": {
+        "method": "DELETE",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token_admin}}" }],
+        "url": { "raw": "{{base_url}}/sedes/{{sede_id}}", "host": ["{{base_url}}"], "path": ["sedes", "{{sede_id}}"] }
+      }
+    },
+    {
+      "name": "Listar auditoria (mas reciente primero)",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token_admin}}" }],
+        "url": { "raw": "{{base_url}}/auditoria", "host": ["{{base_url}}"], "path": ["auditoria"] }
+      }
+    },
+    {
+      "name": "Filtro por entidad (?entidad=sede)",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token_admin}}" }],
+        "url": { "raw": "{{base_url}}/auditoria?entidad=sede", "host": ["{{base_url}}"], "path": ["auditoria"], "query": [{ "key": "entidad", "value": "sede" }] }
+      }
+    },
+    {
+      "name": "Filtro por usuario (?id_usuario=4)",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token_admin}}" }],
+        "url": { "raw": "{{base_url}}/auditoria?id_usuario=4", "host": ["{{base_url}}"], "path": ["auditoria"], "query": [{ "key": "id_usuario", "value": "4" }] }
+      }
+    },
+    {
+      "name": "Filtro por rango de fechas (?desde=&hasta=)",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token_admin}}" }],
+        "url": { "raw": "{{base_url}}/auditoria?desde=2025-01-01&hasta=2030-12-31", "host": ["{{base_url}}"], "path": ["auditoria"], "query": [{ "key": "desde", "value": "2025-01-01" }, { "key": "hasta", "value": "2030-12-31" }] }
+      }
+    },
+    {
+      "name": "Auditoria con rol operador -> 403",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token_operador}}" }],
+        "url": { "raw": "{{base_url}}/auditoria", "host": ["{{base_url}}"], "path": ["auditoria"] }
+      }
+    },
+    {
+      "name": "Auditoria sin token -> 401",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": { "raw": "{{base_url}}/auditoria", "host": ["{{base_url}}"], "path": ["auditoria"] }
+      }
+    }
+  ]
+}

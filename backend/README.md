@@ -122,6 +122,34 @@ Gestión de turnos, historial clínico y notificaciones. Los errores de validaci
 | GET    | `/notificaciones`             | JWT        | Notificaciones del usuario, de la más reciente a la más antigua |
 | PUT    | `/notificaciones/:id/leida`   | JWT        | Marca una notificación propia como leída             |
 
+## Endpoints — Semana 4
+
+Auditoría de acciones sensibles y reportes/estadísticas. Todo el bloque es de acceso
+**exclusivo del rol `administrador`** (otro rol → 403; sin token → 401).
+
+**Auditoría (`log_auditoria`):** cada **alta, baja o modificación** sobre usuarios,
+coberturas, especialidades y sedes se registra **automáticamente** mediante el
+middleware `auditar(entidad)` (`src/middlewares/auditoria.js`), aplicado a nivel de
+ruta — sin repetir código en cada controller. Un GET no se audita; una operación que
+falla (400/404/409) tampoco genera registro.
+
+| Método | Ruta          | Protección       | Descripción                                                                 |
+|--------|---------------|------------------|-----------------------------------------------------------------------------|
+| GET    | `/auditoria`  | JWT + rol admin  | Lista los logs (más reciente primero). Filtros: `?id_usuario=&entidad=&desde=&hasta=` (fechas `YYYY-MM-DD`, inclusivas) |
+
+Cada log devuelve: `id`, `id_usuario`, `usuario` (apellido y nombre), `accion`
+(`ALTA`/`BAJA`/`MODIFICACION`), `entidad`, `id_entidad`, `detalle` y `fecha`.
+
+**Reportes y estadísticas:** consultas agregadas sobre `turno`/`agenda`/`especialidad`/`sede`.
+Todos admiten filtro por rango de fechas del turno (`?desde=&hasta=`, `YYYY-MM-DD`).
+
+| Método | Ruta                                  | Protección       | Descripción                                                        |
+|--------|---------------------------------------|------------------|--------------------------------------------------------------------|
+| GET    | `/reportes/turnos-por-especialidad`   | JWT + rol admin  | Cantidad de turnos agrupada por especialidad                       |
+| GET    | `/reportes/turnos-por-sede`           | JWT + rol admin  | Cantidad de turnos agrupada por sede                               |
+| GET    | `/reportes/ranking-medicos`           | JWT + rol admin  | Ranking de médicos por turnos **atendidos** (todos, no solo el 1º) |
+| GET    | `/reportes/tasa-cancelacion`          | JWT + rol admin  | `total_turnos`, `cancelados`, `tasa_cancelacion` (0–1) y `porcentaje` |
+
 ## Estructura del proyecto
 
 ```
