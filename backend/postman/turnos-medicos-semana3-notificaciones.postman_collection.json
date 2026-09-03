@@ -1,0 +1,63 @@
+{
+  "info": {
+    "name": "Turnos Medicos - Semana 3 (Notificaciones)",
+    "description": "Endpoints de notificaciones del usuario autenticado: listar (mas reciente primero) y marcar como leida. Las notificaciones se generan internamente desde los eventos de turno (esa parte ya esta en el proyecto). Respuesta uniforme { codigo, estado, datos }.\n\nUso: 1) 'Login paciente' guarda token_paciente. 2) Sacar/cancelar/atender algun turno (coleccion Semana 3) para que existan notificaciones. 3) 'Listar notificaciones' y copiar un id en la variable notif_id. 4) 'Marcar como leida'.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:3000" },
+    { "key": "token_paciente", "value": "" },
+    { "key": "notif_id", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Login paciente",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "var d = pm.response.json();",
+              "if (d.datos && d.datos.token) { pm.collectionVariables.set('token_paciente', d.datos.token); }"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"dni\": \"36000960\",\n  \"password\": \"clinica123\"\n}" },
+        "url": { "raw": "{{base_url}}/auth/login", "host": ["{{base_url}}"], "path": ["auth", "login"] }
+      }
+    },
+    {
+      "name": "Listar notificaciones (mas reciente primero)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "var d = pm.response.json();",
+              "if (d.datos && d.datos.length) { pm.collectionVariables.set('notif_id', d.datos[0].id); }"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token_paciente}}" }],
+        "url": { "raw": "{{base_url}}/notificaciones", "host": ["{{base_url}}"], "path": ["notificaciones"] }
+      }
+    },
+    {
+      "name": "Marcar como leida",
+      "request": {
+        "method": "PUT",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token_paciente}}" }],
+        "url": { "raw": "{{base_url}}/notificaciones/{{notif_id}}/leida", "host": ["{{base_url}}"], "path": ["notificaciones", "{{notif_id}}", "leida"] }
+      }
+    }
+  ]
+}
