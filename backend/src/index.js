@@ -15,6 +15,8 @@ const especialidadRoutes = require("./routes/especialidadRoutes");
 const agendaRoutes = require("./routes/agendaRoutes");
 const turnoRoutes = require("./routes/turnoRoutes");
 const historialRoutes = require("./routes/historialRoutes");
+const auditoriaRoutes = require("./routes/auditoriaRoutes");
+const reporteRoutes = require("./routes/reporteRoutes");
 const notificacionRoutes = require("./routes/notificacionRoutes");
 
 const app = express();
@@ -47,6 +49,8 @@ app.use("/especialidades", especialidadRoutes);
 app.use("/agenda", agendaRoutes);
 app.use("/turnos", turnoRoutes);
 app.use("/historial", historialRoutes);
+app.use("/auditoria", auditoriaRoutes);
+app.use("/reportes", reporteRoutes);
 app.use("/notificaciones", notificacionRoutes);
 
 // 404 uniforme para rutas inexistentes.

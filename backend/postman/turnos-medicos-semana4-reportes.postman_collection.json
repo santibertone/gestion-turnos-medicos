@@ -1,0 +1,112 @@
+{
+  "info": {
+    "name": "Turnos Medicos - Semana 4 (Reportes)",
+    "description": "Reportes y estadisticas (Semana 4). Consultas agregadas sobre turno/agenda/especialidad/sede. Todos los endpoints son SOLO para el rol administrador (otro rol -> 403; sin token -> 401) y admiten filtro por rango de fechas del turno (?desde=&hasta=, YYYY-MM-DD).\n\nUso: 1) 'Login admin' guarda token_admin. 2) Correr los 4 reportes. 3) Probar el filtro de fechas y los 403/401.\n\nRespuesta uniforme { codigo, estado, datos }.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:3000" },
+    { "key": "token_admin", "value": "" },
+    { "key": "token_medico", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Login admin",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "var d = pm.response.json();",
+              "if (d.datos && d.datos.token) { pm.collectionVariables.set('token_admin', d.datos.token); }"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"dni\": \"18222333\",\n  \"password\": \"clinica123\"\n}" },
+        "url": { "raw": "{{base_url}}/auth/login", "host": ["{{base_url}}"], "path": ["auth", "login"] }
+      }
+    },
+    {
+      "name": "Login medico (para probar 403)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "var d = pm.response.json();",
+              "if (d.datos && d.datos.token) { pm.collectionVariables.set('token_medico', d.datos.token); }"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"dni\": \"20111222\",\n  \"password\": \"clinica123\"\n}" },
+        "url": { "raw": "{{base_url}}/auth/login", "host": ["{{base_url}}"], "path": ["auth", "login"] }
+      }
+    },
+    {
+      "name": "Turnos por especialidad",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token_admin}}" }],
+        "url": { "raw": "{{base_url}}/reportes/turnos-por-especialidad", "host": ["{{base_url}}"], "path": ["reportes", "turnos-por-especialidad"] }
+      }
+    },
+    {
+      "name": "Turnos por sede",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token_admin}}" }],
+        "url": { "raw": "{{base_url}}/reportes/turnos-por-sede", "host": ["{{base_url}}"], "path": ["reportes", "turnos-por-sede"] }
+      }
+    },
+    {
+      "name": "Ranking de medicos (por atendidos)",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token_admin}}" }],
+        "url": { "raw": "{{base_url}}/reportes/ranking-medicos", "host": ["{{base_url}}"], "path": ["reportes", "ranking-medicos"] }
+      }
+    },
+    {
+      "name": "Tasa de cancelacion",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token_admin}}" }],
+        "url": { "raw": "{{base_url}}/reportes/tasa-cancelacion", "host": ["{{base_url}}"], "path": ["reportes", "tasa-cancelacion"] }
+      }
+    },
+    {
+      "name": "Reporte con filtro de fechas (?desde=&hasta=)",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token_admin}}" }],
+        "url": { "raw": "{{base_url}}/reportes/turnos-por-especialidad?desde=2025-01-01&hasta=2030-12-31", "host": ["{{base_url}}"], "path": ["reportes", "turnos-por-especialidad"], "query": [{ "key": "desde", "value": "2025-01-01" }, { "key": "hasta", "value": "2030-12-31" }] }
+      }
+    },
+    {
+      "name": "Reporte con rol medico -> 403",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token_medico}}" }],
+        "url": { "raw": "{{base_url}}/reportes/tasa-cancelacion", "host": ["{{base_url}}"], "path": ["reportes", "tasa-cancelacion"] }
+      }
+    },
+    {
+      "name": "Reporte sin token -> 401",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": { "raw": "{{base_url}}/reportes/tasa-cancelacion", "host": ["{{base_url}}"], "path": ["reportes", "tasa-cancelacion"] }
+      }
+    }
+  ]
+}
