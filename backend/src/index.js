@@ -17,6 +17,7 @@ const turnoRoutes = require("./routes/turnoRoutes");
 const historialRoutes = require("./routes/historialRoutes");
 const auditoriaRoutes = require("./routes/auditoriaRoutes");
 const reporteRoutes = require("./routes/reporteRoutes");
+const notificacionRoutes = require("./routes/notificacionRoutes");
 
 const app = express();
 app.use(cors());
@@ -50,6 +51,7 @@ app.use("/turnos", turnoRoutes);
 app.use("/historial", historialRoutes);
 app.use("/auditoria", auditoriaRoutes);
 app.use("/reportes", reporteRoutes);
+app.use("/notificaciones", notificacionRoutes);
 
 // 404 uniforme para rutas inexistentes.
 app.use((req, res) => responderError(res, 404, "Ruta no encontrada"));
