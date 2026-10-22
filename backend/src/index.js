@@ -16,6 +16,12 @@ const agendaRoutes = require("./routes/agendaRoutes");
 const turnoRoutes = require("./routes/turnoRoutes");
 const historialRoutes = require("./routes/historialRoutes");
 const auditoriaRoutes = require("./routes/auditoriaRoutes");
+const medicoRoutes = require("./routes/medicoRoutes");
+const usuarioRoutes = require("./routes/usuarioRoutes");
+const pacienteRoutes = require("./routes/pacienteRoutes");
+const notificacionRoutes = require("./routes/notificacionRoutes");
+const disponibilidadRoutes = require("./routes/disponibilidadRoutes");
+const reporteRoutes = require("./routes/reporteRoutes");
 const reporteRoutes = require("./routes/reporteRoutes");
 const notificacionRoutes = require("./routes/notificacionRoutes");
 
@@ -50,6 +56,12 @@ app.use("/agenda", agendaRoutes);
 app.use("/turnos", turnoRoutes);
 app.use("/historial", historialRoutes);
 app.use("/auditoria", auditoriaRoutes);
+app.use("/medicos", medicoRoutes);
+app.use("/usuarios", usuarioRoutes);
+app.use("/pacientes", pacienteRoutes);
+app.use("/notificaciones", notificacionRoutes);
+app.use("/disponibilidad", disponibilidadRoutes);
+app.use("/reportes", reporteRoutes);
 app.use("/reportes", reporteRoutes);
 app.use("/notificaciones", notificacionRoutes);
 

@@ -4,13 +4,13 @@ const { listar, crear, modificar, eliminar } = require("../controllers/sedeContr
 const { verificarToken, verificarRol } = require("../middlewares/auth");
 const { auditar } = require("../middlewares/auditoria");
 
-// CRUD de sedes: solo el rol administrador. La auditoria registra automaticamente
-// las altas/bajas/modificaciones (el GET no se audita).
-router.use(verificarToken, verificarRol("admin", "administrador"), auditar("sede"));
+// Listado de sedes: disponible para cualquier usuario con sesion (lo usan
+// operador, medico y paciente para elegir opciones).
+router.get("/", verificarToken, listar);
 
-router.get("/", listar);
-router.post("/", crear);
-router.put("/:id", modificar);
-router.delete("/:id", eliminar);
+// Alta/baja/modificacion: solo el rol administrador, con auditoria automatica.
+router.post("/", verificarToken, verificarRol("admin", "administrador"), auditar("sede"), crear);
+router.put("/:id", verificarToken, verificarRol("admin", "administrador"), auditar("sede"), modificar);
+router.delete("/:id", verificarToken, verificarRol("admin", "administrador"), auditar("sede"), eliminar);
 
 module.exports = router;

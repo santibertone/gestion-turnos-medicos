@@ -139,8 +139,13 @@ async function cancelar(req, res) {
       if (turno.id_paciente !== req.usuario.id) {
         return responderError(res, 403, "Solo podes cancelar tus propios turnos");
       }
+    } else if (req.usuario.rol === "medico") {
+      // El medico puede cancelar sus propios turnos en cualquiera de sus sedes.
+      if (turno.id_medico !== req.usuario.id) {
+        return responderError(res, 403, "Solo podes cancelar tus propios turnos");
+      }
     } else {
-      // operador / medico: solo turnos de su propia sede.
+      // El operador: solo turnos de su propia sede.
       if (turno.id_sede !== req.usuario.id_sede) {
         return responderError(res, 403, "Solo podes cancelar turnos de tu sede");
       }
@@ -241,7 +246,7 @@ async function misTurnos(req, res) {
 // GET /turnos/agenda-medico?fecha=YYYY-MM-DD  -> turnos programados del medico autenticado
 async function turnosDelMedico(req, res) {
   try {
-    const { fecha } = req.query;
+    const { fecha, id_sede } = req.query;
 
     const condiciones = ["a.id_medico = ?"];
     const valores = [req.usuario.id];
@@ -249,11 +254,16 @@ async function turnosDelMedico(req, res) {
       condiciones.push("t.fecha = ?");
       valores.push(fecha);
     }
+    if (id_sede) {
+      condiciones.push("a.id_sede = ?");
+      valores.push(id_sede);
+    }
 
     const [turnos] = await pool.query(
       `SELECT t.id, t.fecha, t.hora, t.nota, t.estado,
               t.id_paciente, p.apellido AS paciente_apellido, p.nombre AS paciente_nombre,
-              e.descripcion AS especialidad, s.nombre AS sede
+              DATE_FORMAT(p.fecha_nacimiento, '%Y-%m-%d') AS paciente_fecha_nacimiento,
+              a.id_sede, e.descripcion AS especialidad, s.nombre AS sede
          FROM turno t
          JOIN agenda a ON a.id = t.id_agenda
          JOIN usuario p ON p.id = t.id_paciente
@@ -273,7 +283,7 @@ async function turnosDelMedico(req, res) {
 // GET /turnos/sede?fecha=YYYY-MM-DD  -> turnos de la sede del operador autenticado
 async function turnosDeLaSede(req, res) {
   try {
-    const { fecha } = req.query;
+    const { fecha, id_medico } = req.query;
 
     const condiciones = ["a.id_sede = ?"];
     const valores = [req.usuario.id_sede];
@@ -281,12 +291,17 @@ async function turnosDeLaSede(req, res) {
       condiciones.push("t.fecha = ?");
       valores.push(fecha);
     }
+    if (id_medico) {
+      condiciones.push("a.id_medico = ?");
+      valores.push(id_medico);
+    }
 
     const [turnos] = await pool.query(
       `SELECT t.id, t.fecha, t.hora, t.nota, t.estado,
               t.id_paciente, p.apellido AS paciente_apellido, p.nombre AS paciente_nombre,
+              DATE_FORMAT(p.fecha_nacimiento, '%Y-%m-%d') AS paciente_fecha_nacimiento,
               a.id_medico, m.apellido AS medico_apellido, m.nombre AS medico_nombre,
-              e.descripcion AS especialidad
+              a.id_sede, e.descripcion AS especialidad
          FROM turno t
          JOIN agenda a ON a.id = t.id_agenda
          JOIN usuario p ON p.id = t.id_paciente
