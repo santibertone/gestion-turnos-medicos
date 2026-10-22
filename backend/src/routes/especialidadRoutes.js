@@ -4,13 +4,12 @@ const { listar, crear, modificar, eliminar } = require("../controllers/especiali
 const { verificarToken, verificarRol } = require("../middlewares/auth");
 const { auditar } = require("../middlewares/auditoria");
 
-// CRUD de especialidades: solo el rol administrador. La auditoria registra
-// automaticamente las altas/bajas/modificaciones (el GET no se audita).
-router.use(verificarToken, verificarRol("admin", "administrador"), auditar("especialidad"));
+// Listado de especialidades: disponible para cualquier usuario con sesion.
+router.get("/", verificarToken, listar);
 
-router.get("/", listar);
-router.post("/", crear);
-router.put("/:id", modificar);
-router.delete("/:id", eliminar);
+// Alta/baja/modificacion: solo el rol administrador, con auditoria automatica.
+router.post("/", verificarToken, verificarRol("admin", "administrador"), auditar("especialidad"), crear);
+router.put("/:id", verificarToken, verificarRol("admin", "administrador"), auditar("especialidad"), modificar);
+router.delete("/:id", verificarToken, verificarRol("admin", "administrador"), auditar("especialidad"), eliminar);
 
 module.exports = router;

@@ -1,0 +1,245 @@
+{
+  "info": {
+    "name": "Turnos Medicos - Entrega Frontend (endpoints nuevos/ampliados)",
+    "description": "Endpoints agregados o ampliados en el backend para soportar el frontend final. Estructura de respuesta uniforme { codigo, estado, datos }. Variables: baseUrl y token (se completa con el login admin).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000" },
+    { "key": "token", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login admin (guarda token)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const d = pm.response.json();",
+                  "if (d.datos && d.datos.token) pm.collectionVariables.set('token', d.datos.token);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"dni\": \"18222333\",\n  \"password\": \"clinica123\"\n}" },
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Medicos",
+      "item": [
+        {
+          "name": "Listar medicos (con especialidades, cualquier sesion)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/medicos?id_especialidad=&id_sede=",
+              "host": ["{{baseUrl}}"],
+              "path": ["medicos"],
+              "query": [
+                { "key": "id_especialidad", "value": "" },
+                { "key": "id_sede", "value": "" }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Usuarios (admin)",
+      "item": [
+        {
+          "name": "Listar usuarios (paginado + filtros)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/usuarios?pagina=1&limite=10&nombre=&apellido=&rol=&id_sede=",
+              "host": ["{{baseUrl}}"],
+              "path": ["usuarios"],
+              "query": [
+                { "key": "pagina", "value": "1" },
+                { "key": "limite", "value": "10" },
+                { "key": "nombre", "value": "" },
+                { "key": "apellido", "value": "" },
+                { "key": "rol", "value": "" },
+                { "key": "id_sede", "value": "" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Crear medico (+ especialidades)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Lucas\",\n  \"apellido\": \"Nuevo\",\n  \"dni\": \"40111222\",\n  \"email\": \"lnuevo@clinica.com\",\n  \"password\": \"clinica123\",\n  \"fecha_nacimiento\": \"1988-05-10\",\n  \"rol\": \"medico\",\n  \"id_sede\": 1,\n  \"especialidades\": [1, 2]\n}" },
+            "url": { "raw": "{{baseUrl}}/usuarios", "host": ["{{baseUrl}}"], "path": ["usuarios"] }
+          }
+        },
+        {
+          "name": "Editar usuario",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Lucas\",\n  \"apellido\": \"Editado\",\n  \"dni\": \"40111222\",\n  \"email\": \"lnuevo@clinica.com\",\n  \"fecha_nacimiento\": \"1988-05-10\",\n  \"telefono\": \"3424000000\",\n  \"id_sede\": 2,\n  \"especialidades\": [3]\n}" },
+            "url": { "raw": "{{baseUrl}}/usuarios/8", "host": ["{{baseUrl}}"], "path": ["usuarios", "8"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Pacientes",
+      "item": [
+        {
+          "name": "Buscar paciente por DNI o apellido",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/pacientes?busqueda=Friggeri",
+              "host": ["{{baseUrl}}"],
+              "path": ["pacientes"],
+              "query": [{ "key": "busqueda", "value": "Friggeri" }]
+            }
+          }
+        },
+        {
+          "name": "Paciente actualiza sus datos (usar token de paciente)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"asdas@gaasds.com\",\n  \"telefono\": \"3425550000\",\n  \"id_cobertura\": 2,\n  \"password\": \"\"\n}" },
+            "url": { "raw": "{{baseUrl}}/pacientes/mis-datos", "host": ["{{baseUrl}}"], "path": ["pacientes", "mis-datos"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Disponibilidad (paciente/operador)",
+      "item": [
+        {
+          "name": "Fechas disponibles de un medico",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/disponibilidad/fechas?id_medico=3&id_especialidad=1&id_sede=1",
+              "host": ["{{baseUrl}}"],
+              "path": ["disponibilidad", "fechas"],
+              "query": [
+                { "key": "id_medico", "value": "3" },
+                { "key": "id_especialidad", "value": "1" },
+                { "key": "id_sede", "value": "1" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Horarios libres de un medico en una fecha",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/disponibilidad/horarios?id_medico=3&id_especialidad=1&id_sede=1&fecha=2026-10-22",
+              "host": ["{{baseUrl}}"],
+              "path": ["disponibilidad", "horarios"],
+              "query": [
+                { "key": "id_medico", "value": "3" },
+                { "key": "id_especialidad", "value": "1" },
+                { "key": "id_sede", "value": "1" },
+                { "key": "fecha", "value": "2026-10-22" }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Notificaciones (cualquier sesion)",
+      "item": [
+        {
+          "name": "Listar mis notificaciones",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/notificaciones", "host": ["{{baseUrl}}"], "path": ["notificaciones"] }
+          }
+        },
+        {
+          "name": "Cantidad de no leidas",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/notificaciones/no-leidas", "host": ["{{baseUrl}}"], "path": ["notificaciones", "no-leidas"] }
+          }
+        },
+        {
+          "name": "Marcar como leida",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/notificaciones/1/leer", "host": ["{{baseUrl}}"], "path": ["notificaciones", "1", "leer"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reportes (admin)",
+      "item": [
+        {
+          "name": "Turnos por especialidad",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/reportes/turnos-por-especialidad?desde=&hasta=", "host": ["{{baseUrl}}"], "path": ["reportes", "turnos-por-especialidad"], "query": [{ "key": "desde", "value": "" }, { "key": "hasta", "value": "" }] }
+          }
+        },
+        {
+          "name": "Turnos por sede",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/reportes/turnos-por-sede", "host": ["{{baseUrl}}"], "path": ["reportes", "turnos-por-sede"] }
+          }
+        },
+        {
+          "name": "Ranking de medicos",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/reportes/ranking-medicos", "host": ["{{baseUrl}}"], "path": ["reportes", "ranking-medicos"] }
+          }
+        },
+        {
+          "name": "Tasa de cancelacion",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/reportes/tasa-cancelacion", "host": ["{{baseUrl}}"], "path": ["reportes", "tasa-cancelacion"] }
+          }
+        }
+      ]
+    }
+  ]
+}

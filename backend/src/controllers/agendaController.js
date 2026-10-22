@@ -41,6 +41,14 @@ async function crear(req, res) {
     if (req.usuario.rol === "medico" && Number(id_medico) !== req.usuario.id) {
       return responderError(res, 403, "Un medico solo puede gestionar su propia agenda");
     }
+    // El operador solo puede crear agenda en su propia sede.
+    if (req.usuario.rol === "operador" && Number(id_sede) !== req.usuario.id_sede) {
+      return responderError(res, 403, "Un operador solo puede gestionar la agenda de su sede");
+    }
+    // La hora de salida debe ser posterior a la de entrada.
+    if (hora_salida <= hora_entrada) {
+      return responderError(res, 400, "La hora de salida debe ser posterior a la de entrada");
+    }
 
     const errorRef = await validarReferencias(id_medico, id_especialidad, id_sede);
     if (errorRef) {
@@ -130,23 +138,47 @@ async function modificar(req, res) {
 
     // La agenda debe existir.
     const [existentes] = await pool.query(
-      "SELECT id_medico FROM agenda WHERE id = ?",
+      "SELECT id_medico, id_sede FROM agenda WHERE id = ?",
       [id]
     );
     if (existentes.length === 0) {
       return responderError(res, 404, "La agenda no existe");
     }
+    const actual = existentes[0];
 
     // El medico solo puede modificar su propia agenda (ni el registro actual ni reasignarla a otro).
     if (req.usuario.rol === "medico") {
-      if (existentes[0].id_medico !== req.usuario.id || Number(id_medico) !== req.usuario.id) {
+      if (actual.id_medico !== req.usuario.id || Number(id_medico) !== req.usuario.id) {
         return responderError(res, 403, "Un medico solo puede gestionar su propia agenda");
       }
+    }
+    // El operador solo puede modificar agenda de su sede (ni la actual ni moverla a otra).
+    if (req.usuario.rol === "operador") {
+      if (actual.id_sede !== req.usuario.id_sede || Number(id_sede) !== req.usuario.id_sede) {
+        return responderError(res, 403, "Un operador solo puede gestionar la agenda de su sede");
+      }
+    }
+    // La hora de salida debe ser posterior a la de entrada.
+    if (hora_salida <= hora_entrada) {
+      return responderError(res, 400, "La hora de salida debe ser posterior a la de entrada");
     }
 
     const errorRef = await validarReferencias(id_medico, id_especialidad, id_sede);
     if (errorRef) {
       return responderError(res, 400, errorRef);
+    }
+
+    // No se puede modificar dejando turnos confirmados fuera del nuevo horario/fecha.
+    const [confirmados] = await pool.query(
+      `SELECT DATE_FORMAT(fecha, '%Y-%m-%d') AS fecha, hora
+         FROM turno WHERE id_agenda = ? AND estado = 'confirmado'`,
+      [id]
+    );
+    const hayFuera = confirmados.some(
+      (t) => t.fecha !== fecha || t.hora < hora_entrada || t.hora >= hora_salida
+    );
+    if (hayFuera) {
+      return responderError(res, 409, "No se puede modificar: hay turnos confirmados fuera del nuevo horario");
     }
 
     await pool.query(
@@ -170,19 +202,32 @@ async function eliminar(req, res) {
     const { id } = req.params;
 
     const [existentes] = await pool.query(
-      "SELECT id_medico FROM agenda WHERE id = ?",
+      "SELECT id_medico, id_sede FROM agenda WHERE id = ?",
       [id]
     );
     if (existentes.length === 0) {
       return responderError(res, 404, "La agenda no existe");
     }
+    const actual = existentes[0];
 
     // El medico solo puede eliminar su propia agenda.
-    if (req.usuario.rol === "medico" && existentes[0].id_medico !== req.usuario.id) {
+    if (req.usuario.rol === "medico" && actual.id_medico !== req.usuario.id) {
       return responderError(res, 403, "Un medico solo puede gestionar su propia agenda");
     }
+    // El operador solo puede eliminar agenda de su sede.
+    if (req.usuario.rol === "operador" && actual.id_sede !== req.usuario.id_sede) {
+      return responderError(res, 403, "Un operador solo puede gestionar la agenda de su sede");
+    }
 
-    // No se puede eliminar si tiene turnos asociados (evita romper por FK).
+    // No se puede eliminar un rango con turnos confirmados.
+    const [confirmados] = await pool.query(
+      "SELECT COUNT(*) AS total FROM turno WHERE id_agenda = ? AND estado = 'confirmado'",
+      [id]
+    );
+    if (confirmados[0].total > 0) {
+      return responderError(res, 409, "No se puede eliminar: la agenda tiene turnos confirmados");
+    }
+    // Tampoco si tiene turnos cancelados/atendidos asociados (restriccion de integridad).
     const [turnos] = await pool.query(
       "SELECT COUNT(*) AS total FROM turno WHERE id_agenda = ?",
       [id]
