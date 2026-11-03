@@ -27,7 +27,8 @@ INSERT INTO `usuario`
   (`id`, `apellido`, `nombre`, `fecha_nacimiento`, `password`, `rol`, `email`, `telefono`, `dni`, `id_sede`, `id_cobertura`) VALUES
   (5, 'Garcia', 'Lucas', '1983-06-12', '$2b$10$KV4PC4WbL3/RGduQqbIPAemqV.2eagkp4K36kF1VyE0vLZvv7.PZ.', 'medico', 'lgarcia@clinica.com', '3424333444', '25333444', 1, NULL),
   (6, 'Martinez', 'Sofia', '1990-02-25', '$2b$10$KV4PC4WbL3/RGduQqbIPAemqV.2eagkp4K36kF1VyE0vLZvv7.PZ.', 'medico', 'smartinez@clinica.com', '3424555666', '30555666', 2, NULL),
-  (7, 'Ramirez', 'Carla', '2001-09-05', '$2b$10$KV4PC4WbL3/RGduQqbIPAemqV.2eagkp4K36kF1VyE0vLZvv7.PZ.', 'paciente', 'cramirez@gmail.com', '3424777888', '42777888', NULL, 2)
+  (7, 'Ramirez', 'Carla', '2001-09-05', '$2b$10$KV4PC4WbL3/RGduQqbIPAemqV.2eagkp4K36kF1VyE0vLZvv7.PZ.', 'paciente', 'cramirez@gmail.com', '3424777888', '42777888', NULL, 2),
+  (8, 'Sosa', 'Diego', '1986-11-03', '$2b$10$KV4PC4WbL3/RGduQqbIPAemqV.2eagkp4K36kF1VyE0vLZvv7.PZ.', 'operador', 'dsosa@clinica.com', '3424888999', '16500777', 2, NULL)
   ON DUPLICATE KEY UPDATE apellido = VALUES(apellido);
 
 -- --- Especialidades de cada medico ------------------------------------------
@@ -71,7 +72,7 @@ INSERT INTO `notificacion` (`id`, `id_usuario`, `tipo`, `mensaje`, `leida`) VALU
 -- Reajustar los AUTO_INCREMENT para que las altas nuevas no choquen.
 ALTER TABLE `cobertura` AUTO_INCREMENT = 5;
 ALTER TABLE `especialidad` AUTO_INCREMENT = 5;
-ALTER TABLE `usuario` AUTO_INCREMENT = 8;
+ALTER TABLE `usuario` AUTO_INCREMENT = 9;
 ALTER TABLE `medico_especialidad` AUTO_INCREMENT = 5;
 ALTER TABLE `agenda` AUTO_INCREMENT = 9;
 ALTER TABLE `turno` AUTO_INCREMENT = 6;

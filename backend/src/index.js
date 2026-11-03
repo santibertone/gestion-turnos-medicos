@@ -22,8 +22,6 @@ const pacienteRoutes = require("./routes/pacienteRoutes");
 const notificacionRoutes = require("./routes/notificacionRoutes");
 const disponibilidadRoutes = require("./routes/disponibilidadRoutes");
 const reporteRoutes = require("./routes/reporteRoutes");
-const reporteRoutes = require("./routes/reporteRoutes");
-const notificacionRoutes = require("./routes/notificacionRoutes");
 
 const app = express();
 app.use(cors());
@@ -62,8 +60,6 @@ app.use("/pacientes", pacienteRoutes);
 app.use("/notificaciones", notificacionRoutes);
 app.use("/disponibilidad", disponibilidadRoutes);
 app.use("/reportes", reporteRoutes);
-app.use("/reportes", reporteRoutes);
-app.use("/notificaciones", notificacionRoutes);
 
 // 404 uniforme para rutas inexistentes.
 app.use((req, res) => responderError(res, 404, "Ruta no encontrada"));
