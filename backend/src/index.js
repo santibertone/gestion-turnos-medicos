@@ -64,7 +64,7 @@ app.use("/reportes", reporteRoutes);
 // 404 uniforme para rutas inexistentes.
 app.use((req, res) => responderError(res, 404, "Ruta no encontrada"));
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3200;
 app.listen(PORT, () => {
   console.log(`Servidor escuchando en http://localhost:${PORT}`);
 });

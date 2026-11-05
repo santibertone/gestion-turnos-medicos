@@ -5,7 +5,7 @@
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
-    { "key": "base_url", "value": "http://localhost:3000" },
+    { "key": "base_url", "value": "http://localhost:3200" },
     { "key": "token_admin", "value": "" },
     { "key": "token_medico", "value": "" }
   ],

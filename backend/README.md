@@ -29,7 +29,7 @@ TP Integrador · Programación II · Node.js + Express + MySQL + JWT.
    ```bash
    npm run dev
    ```
-   Servidor en `http://localhost:3000`.
+   Servidor en `http://localhost:3200`.
 
 ## Usuarios de prueba (contraseña: `clinica123`)
 
